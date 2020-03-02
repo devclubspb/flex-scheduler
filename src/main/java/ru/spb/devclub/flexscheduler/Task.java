@@ -1,6 +1,7 @@
 package ru.spb.devclub.flexscheduler;
 
 import lombok.Data;
+import org.springframework.scheduling.Trigger;
 
 @Data
 public class Task {
