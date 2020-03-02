@@ -9,14 +9,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
 public class ConcurrentTaskRegistry implements TaskRegistry {
     private final Map<String, Task> scheduledTasks = new ConcurrentHashMap<>();
     private final ThreadPoolTaskScheduler executorService;
+    private final boolean mayInterruptIfRunning = false;
 
     public ConcurrentTaskRegistry() {
         this.executorService = new ThreadPoolTaskScheduler();
@@ -51,16 +50,23 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
             throw new TaskNotFoundException(taskName);
         }
 
-        removedTask.getFuture().cancel(false);
+        removedTask.getFuture().cancel(mayInterruptIfRunning);
     }
 
     @Override
-    public List<Task> getList() {
+    public List<ObservableTask> getList() {
         List<Task> tasks = scheduledTasks.values().stream()
-                .map(task -> Task.builder()
-                        .name(task.getName())
-                        .trigger(task.getTrigger())
-                        .build())
+                .map(t -> {
+                    Task task = new Task();
+                    task.setName(t.getName());
+                    task.setTrigger(t.getTrigger());
+                    task.setActive(t.isActive());
+                    task.setLastLaunchDate(t.getLastLaunchDate());
+                    task.setLastFinishedDate(t.getLastFinishedDate());
+                    task.setLaunchedCount(t.getLaunchedCount());
+
+                    return task;
+                })
                 .collect(Collectors.toList());
 
         return Collections.unmodifiableList(tasks);
