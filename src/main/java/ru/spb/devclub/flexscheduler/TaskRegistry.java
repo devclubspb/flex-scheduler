@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface TaskRegistry {
 
-    void schedule(String taskName, Runnable command, Trigger trigger, boolean overwrite) throws TaskAlreadyExistsException;
+    void schedule(Task task, boolean overwrite) throws TaskAlreadyExistsException;
 
     void cancel(String taskName) throws TaskNotFoundException;
 
