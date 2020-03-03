@@ -15,4 +15,5 @@ public interface TaskRegistry {
 
     List<ObservableTask> getList();
 
+    void refreshTriggers();
 }

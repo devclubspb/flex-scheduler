@@ -1,6 +1,7 @@
 package ru.spb.devclub.flexscheduler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.Assert;
 import ru.spb.devclub.flexscheduler.exception.TaskAlreadyExistsException;
@@ -46,8 +47,19 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
         }
 
         ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.getTrigger());
+
         registeredTask.setFuture(future);
         log.info("Registered task: {}", registeredTask.getName());
+    }
+
+    private void reSchedule(RegisteredTask registeredTask) {
+        cancelSilently(registeredTask.getName());
+
+        scheduledTasks.put(registeredTask.getName(), registeredTask);
+        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.getTrigger());
+
+        registeredTask.setFuture(future);
+        log.info("Task {} was re-scheduled", registeredTask.getName());
     }
 
     @Override
@@ -75,5 +87,19 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
         return scheduledTasks.values().stream()
                 .map(ObservableTask::new)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public void refreshTriggers() {
+        scheduledTasks.forEach((taskName, registeredTask) -> {
+            Trigger lastTrigger = registeredTask.getLastTrigger();
+            Trigger newTrigger = registeredTask.getTrigger();
+
+            if (newTrigger.equals(lastTrigger)) {
+                log.debug("Trigger did not changed for taskName: {}", taskName);
+            } else {
+                reSchedule(registeredTask);
+            }
+        });
     }
 }

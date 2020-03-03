@@ -17,7 +17,7 @@ public class ObservableTask {
 
     public ObservableTask(RegisteredTask registeredTask) {
         this.name = registeredTask.getName();
-        this.trigger = registeredTask.getTrigger();
+        this.trigger = registeredTask.getLastTrigger();
         this.lastLaunchDate = registeredTask.getLastLaunchDate();
         this.lastFinishedDate = registeredTask.getLastFinishedDate();
         this.active = registeredTask.isActive();
