@@ -11,6 +11,8 @@ public interface TaskRegistry {
 
     void cancel(String taskName) throws TaskNotFoundException;
 
+    void cancelSilently(String taskName);
+
     List<ObservableTask> getList();
 
 }

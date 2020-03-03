@@ -1,5 +1,6 @@
 package ru.spb.devclub.flexscheduler;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.util.Assert;
 import ru.spb.devclub.flexscheduler.exception.TaskAlreadyExistsException;
@@ -11,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
+@Slf4j
 public class ConcurrentTaskRegistry implements TaskRegistry {
     private static final boolean DEFAULT_MAY_INTERRUPT_IF_RUNNING = false;
 
@@ -34,13 +36,18 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
         Assert.notNull(task, "task must not be null");
         RegisteredTask registeredTask = new RegisteredTask(task);
 
+        if (overwrite) {
+            cancelSilently(registeredTask.getName());
+        }
+
         RegisteredTask previousTask = scheduledTasks.putIfAbsent(task.getName(), registeredTask);
-        if (!overwrite && !registeredTask.equals(previousTask)) {
+        if (!registeredTask.equals(previousTask)) {
             throw new TaskAlreadyExistsException(registeredTask.getName());
         }
 
         ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.getTrigger());
         registeredTask.setFuture(future);
+        log.info("Registered task: {}", registeredTask.getName());
     }
 
     @Override
@@ -51,6 +58,16 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
         }
 
         removedTask.getFuture().cancel(mayInterruptIfRunning);
+        log.info("Cancelled task: {}", taskName);
+    }
+
+    @Override
+    public void cancelSilently(String taskName) {
+        RegisteredTask removedTask = scheduledTasks.remove(taskName);
+        if (removedTask != null) {
+            removedTask.getFuture().cancel(mayInterruptIfRunning);
+            log.info("Cancelled task: {}", taskName);
+        }
     }
 
     @Override
