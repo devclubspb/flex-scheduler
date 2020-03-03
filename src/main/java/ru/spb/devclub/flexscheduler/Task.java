@@ -1,47 +1,22 @@
 package ru.spb.devclub.flexscheduler;
 
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.Trigger;
-
-import java.time.LocalDateTime;
-import java.util.concurrent.ScheduledFuture;
+import org.springframework.util.Assert;
 
 @Data
-public class Task implements ObservableTask {
-    private String name;
-    private Trigger trigger;
-    private ObservableRunnable command;
-    private ScheduledFuture<?> future;
-
-    private LocalDateTime lastLaunchDate;
-    private LocalDateTime lastFinishedDate;
-    private boolean isActive;
-    private int launchedCount;
-
-    public Task() {
-    }
+public class Task {
+    private final String name;
+    private final Trigger trigger;
+    private final Runnable command;
 
     public Task(String name, Trigger trigger, Runnable command) {
+        Assert.notNull(name, "task name must not be null");
+        Assert.notNull(command, "task command must not be null");
+        Assert.notNull(trigger, "task trigger must not be null");
+
         this.name = name;
         this.trigger = trigger;
-        this.command = new ObservableRunnable(command);
-    }
-
-    @RequiredArgsConstructor
-    private class ObservableRunnable implements Runnable {
-        private final Runnable runnable;
-
-        @Override
-        public void run() {
-            launchedCount++;
-            lastFinishedDate = LocalDateTime.now();
-            isActive = true;
-
-            runnable.run();
-
-            lastFinishedDate = LocalDateTime.now();
-            isActive = false;
-        }
+        this.command = command;
     }
 }

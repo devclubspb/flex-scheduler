@@ -5,7 +5,6 @@ import org.springframework.util.Assert;
 import ru.spb.devclub.flexscheduler.exception.TaskAlreadyExistsException;
 import ru.spb.devclub.flexscheduler.exception.TaskNotFoundException;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,39 +12,42 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.stream.Collectors;
 
 public class ConcurrentTaskRegistry implements TaskRegistry {
-    private final Map<String, Task> scheduledTasks = new ConcurrentHashMap<>();
-    private final ThreadPoolTaskScheduler executorService;
-    private final boolean mayInterruptIfRunning = false;
+    private static final boolean DEFAULT_MAY_INTERRUPT_IF_RUNNING = false;
 
-    public ConcurrentTaskRegistry() {
-        this.executorService = new ThreadPoolTaskScheduler();
+    private final Map<String, RegisteredTask> scheduledTasks = new ConcurrentHashMap<>();
+    private final ThreadPoolTaskScheduler executorService = new ThreadPoolTaskScheduler();
+    private final boolean mayInterruptIfRunning;
+
+    {
         this.executorService.setRemoveOnCancelPolicy(true);
     }
 
-    public ConcurrentTaskRegistry(int poolSize) {
-        this();
+    public ConcurrentTaskRegistry() {
+        this.mayInterruptIfRunning = DEFAULT_MAY_INTERRUPT_IF_RUNNING;
+    }
+
+    public ConcurrentTaskRegistry(int poolSize, boolean mayInterruptIfRunning) {
         executorService.setPoolSize(poolSize);
+        this.mayInterruptIfRunning = mayInterruptIfRunning;
     }
 
     @Override
     public void schedule(Task task, boolean overwrite) throws TaskAlreadyExistsException {
         Assert.notNull(task, "task must not be null");
-        Assert.notNull(task.getName(), "task name must not be null");
-        Assert.notNull(task.getCommand(), "task command must not be null");
-        Assert.notNull(task.getTrigger(), "task trigger must not be null");
+        RegisteredTask registeredTask = new RegisteredTask(task);
 
-        Task previousTask = scheduledTasks.putIfAbsent(task.getName(), task);
-        if (!task.equals(previousTask)) {
-            throw new TaskAlreadyExistsException(task.getName());
+        RegisteredTask previousTask = scheduledTasks.putIfAbsent(task.getName(), registeredTask);
+        if (!registeredTask.equals(previousTask)) {
+            throw new TaskAlreadyExistsException(registeredTask.getName());
         }
 
-        ScheduledFuture<?> future = executorService.schedule(task.getCommand(), task.getTrigger());
-        task.setFuture(future);
+        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.getTrigger());
+        registeredTask.setFuture(future);
     }
 
     @Override
     public void cancel(String taskName) throws TaskNotFoundException {
-        Task removedTask = scheduledTasks.remove(taskName);
+        RegisteredTask removedTask = scheduledTasks.remove(taskName);
         if (removedTask == null) {
             throw new TaskNotFoundException(taskName);
         }
@@ -55,20 +57,8 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
 
     @Override
     public List<ObservableTask> getList() {
-        List<Task> tasks = scheduledTasks.values().stream()
-                .map(t -> {
-                    Task task = new Task();
-                    task.setName(t.getName());
-                    task.setTrigger(t.getTrigger());
-                    task.setActive(t.isActive());
-                    task.setLastLaunchDate(t.getLastLaunchDate());
-                    task.setLastFinishedDate(t.getLastFinishedDate());
-                    task.setLaunchedCount(t.getLaunchedCount());
-
-                    return task;
-                })
+        return scheduledTasks.values().stream()
+                .map(ObservableTask::new)
                 .collect(Collectors.toList());
-
-        return Collections.unmodifiableList(tasks);
     }
 }

@@ -1,4 +1,4 @@
-package ru.spb.devclub.flexscheduler;
+package ru.spb.devclub.flexscheduler.trigger;
 
 import lombok.Data;
 import org.springframework.scheduling.Trigger;
