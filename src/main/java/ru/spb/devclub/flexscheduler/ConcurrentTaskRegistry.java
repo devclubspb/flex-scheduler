@@ -15,12 +15,10 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
     private static final boolean DEFAULT_MAY_INTERRUPT_IF_RUNNING = false;
 
     private final Map<String, RegisteredTask> scheduledTasks = new ConcurrentHashMap<>();
-    private final ThreadPoolTaskScheduler executorService = new ThreadPoolTaskScheduler();
+    private final ThreadPoolTaskScheduler executorService = new ThreadPoolTaskScheduler() {{
+        setRemoveOnCancelPolicy(true);
+    }};
     private final boolean mayInterruptIfRunning;
-
-    {
-        this.executorService.setRemoveOnCancelPolicy(true);
-    }
 
     public ConcurrentTaskRegistry() {
         this.mayInterruptIfRunning = DEFAULT_MAY_INTERRUPT_IF_RUNNING;
@@ -37,7 +35,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
         RegisteredTask registeredTask = new RegisteredTask(task);
 
         RegisteredTask previousTask = scheduledTasks.putIfAbsent(task.getName(), registeredTask);
-        if (!registeredTask.equals(previousTask)) {
+        if (!overwrite && !registeredTask.equals(previousTask)) {
             throw new TaskAlreadyExistsException(registeredTask.getName());
         }
 
