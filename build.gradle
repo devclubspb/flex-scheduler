@@ -27,6 +27,7 @@ dependencyManagement {
 dependencies {
 	compileOnly 'org.springframework.boot:spring-boot-starter-actuator'
 	compileOnly 'org.springframework:spring-jdbc'
+	compileOnly 'org.springframework.cloud:spring-cloud-config-client:2.2.1.RELEASE'
 
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
