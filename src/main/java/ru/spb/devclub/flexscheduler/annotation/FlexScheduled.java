@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FlexScheduled {
-    String value() default "Default value";
+    long fixedDelay() default -1;
 }

@@ -12,6 +12,7 @@ import org.springframework.util.ReflectionUtils;
 import ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry;
 import ru.spb.devclub.flexscheduler.Task;
 import ru.spb.devclub.flexscheduler.TaskRegistry;
+import ru.spb.devclub.flexscheduler.supplier.TriggerSupplier;
 import ru.spb.devclub.flexscheduler.trigger.DisposableTrigger;
 
 import java.lang.reflect.InvocationTargetException;
@@ -48,11 +49,9 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
             if (annotatedMethods.isEmpty()) {
                 this.nonAnnotatedClasses.add(targetClass);
             } else {
-                annotatedMethods.forEach((method, flexScheduledMethods) -> {
-                    flexScheduledMethods.forEach(flexScheduled -> {
-                        processFlexScheduled(flexScheduled, method, bean);
-                    });
-                });
+                annotatedMethods.forEach((method, flexScheduledMethods) -> flexScheduledMethods.forEach(flexScheduled -> {
+                    processFlexScheduled(flexScheduled, method, bean);
+                }));
             }
         }
         return bean;
@@ -62,15 +61,23 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
         return MethodIntrospector.selectMethods(targetType, SELECTOR);
     }
 
-    private void processFlexScheduled(FlexScheduled flexScheduled, Method method, Object bean) {
-        Runnable runnable = createRunnable(method, bean);
-        final DisposableTrigger trigger = new DisposableTrigger(1, TimeUnit.SECONDS);
-        final Task task = new Task("name", trigger, runnable);
+    private void processFlexScheduled(FlexScheduled annotation, Method method, Object bean) {
+        final String taskName = createTaskName(annotation, method, bean);
+        final TriggerSupplier triggerSupplier = createTriggerSupplier(annotation, method, bean);
+        final Runnable runnable = createRunnable(annotation, method, bean);
+        final Task task = new Task(taskName, triggerSupplier, runnable);
         taskRegistry.schedule(task, false);
-
     }
 
-    private Runnable createRunnable(Method method, Object bean) {
+    protected String createTaskName(FlexScheduled annotation, Method method, Object bean) {
+        return method.getClass().getName() + "#" + method.getName();
+    }
+
+    protected TriggerSupplier createTriggerSupplier(FlexScheduled annotation, Method method, Object bean) {
+        return () -> new DisposableTrigger(annotation.fixedDelay(), TimeUnit.MILLISECONDS);
+    }
+
+    protected Runnable createRunnable(FlexScheduled annotation, Method method, Object bean) {
         Assert.isTrue(method.getParameterCount() == 0, "Only no-arg methods may be annotated with @FlexScheduled");
         Method invocableMethod = AopUtils.selectInvocableMethod(method, bean.getClass());
         return () -> {
