@@ -12,6 +12,9 @@ configurations {
 	compileOnly {
 		extendsFrom annotationProcessor
 	}
+	testCompile {
+		extendsFrom compileOnly
+	}
 }
 
 repositories {
