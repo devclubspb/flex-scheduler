@@ -18,6 +18,7 @@ configurations {
 }
 
 repositories {
+	jcenter()
 	mavenCentral()
 }
 
@@ -38,6 +39,7 @@ dependencies {
 	testImplementation('org.springframework.boot:spring-boot-starter-test') {
 		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
 	}
+	compile 'org.jetbrains.kotlinx:lincheck:2.5.2'
 }
 
 test {

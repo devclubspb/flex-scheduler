@@ -1,5 +1,6 @@
 package ru.spb.devclub.flexscheduler;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -9,8 +10,11 @@ import ru.spb.devclub.flexscheduler.supplier.TriggerSupplier;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ScheduledFuture;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 @RequiredArgsConstructor
+@EqualsAndHashCode(exclude = {"future", "triggerSupplier", "command"})
 class RegisteredTask {
     @Getter
     private final String name;
@@ -22,15 +26,13 @@ class RegisteredTask {
     private ScheduledFuture<?> future;
 
     @Getter
-    private LocalDateTime lastLaunchDate;
+    private volatile LocalDateTime lastLaunchDate;
     @Getter
-    private LocalDateTime lastFinishedDate;
+    private volatile LocalDateTime lastFinishedDate;
     @Getter
     private boolean isActive;
-    @Getter
-    private int launchedCount;
-    @Getter
-    private Trigger lastTrigger;
+    private final AtomicInteger launchedCount = new AtomicInteger();
+    private final AtomicReference<Trigger> lastTrigger = new AtomicReference<>();
 
     public RegisteredTask(Task task) {
         Assert.notNull(task, "task must not be null");
@@ -43,22 +45,30 @@ class RegisteredTask {
         this.command = new ObservableRunnable(task.getCommand());
     }
 
-    public Trigger getTrigger() {
+    public Trigger fetchTrigger() {
         Trigger trigger = triggerSupplier.get();
         Assert.notNull(trigger, "triggerSupplier returned null trigger for taskName: " + name);
 
-        lastTrigger = trigger;
-        return lastTrigger;
+        lastTrigger.set(trigger);
+        return trigger;
+    }
+
+    public Trigger getLastTrigger() {
+        return lastTrigger.get();
+    }
+
+    public int getLaunchedCount() {
+        return launchedCount.get();
     }
 
     @RequiredArgsConstructor
-    private class ObservableRunnable implements Runnable {
+    public class ObservableRunnable implements Runnable {
         private final Runnable runnable;
 
         @Override
         public void run() {
-            launchedCount++;
-            lastFinishedDate = LocalDateTime.now();
+            launchedCount.incrementAndGet();
+            lastLaunchDate = LocalDateTime.now();
             isActive = true;
 
             runnable.run();

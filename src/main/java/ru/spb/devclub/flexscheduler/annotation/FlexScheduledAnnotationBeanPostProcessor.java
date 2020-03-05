@@ -65,7 +65,7 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
         final String taskName = createTaskName(annotation, method, bean);
         final TriggerSupplier triggerSupplier = createTriggerSupplier(annotation, method, bean);
         final Runnable runnable = createRunnable(annotation, method, bean);
-        final Task task = new Task(taskName, triggerSupplier, runnable);
+        final Task task = new Task(taskName, runnable, triggerSupplier);
         taskRegistry.schedule(task, false);
     }
 

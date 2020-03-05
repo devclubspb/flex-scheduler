@@ -10,7 +10,7 @@ public class Task {
     private final Runnable command;
     private final TriggerSupplier triggerSupplier;
 
-    public Task(String name, TriggerSupplier triggerSupplier, Runnable command) {
+    public Task(String name, Runnable command, TriggerSupplier triggerSupplier) {
         Assert.notNull(name, "task name must not be null");
         Assert.notNull(command, "task command must not be null");
         Assert.notNull(triggerSupplier, "task trigger supplier must not be null");
