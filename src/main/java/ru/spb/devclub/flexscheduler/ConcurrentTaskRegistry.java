@@ -33,15 +33,19 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
     }
 
     @Override
-    public void schedule(Task task, boolean overwrite) throws TaskAlreadyExistsException {
+    public void schedule(Task task, boolean overwrite) {
         Assert.notNull(task, "task must not be null");
         RegisteredTask registeredTask = new RegisteredTask(task);
 
+        schedule(registeredTask, overwrite);
+    }
+
+    private void schedule(RegisteredTask registeredTask, boolean overwrite) {
         if (overwrite) {
-            cancelSilently(registeredTask.getName());
+            cancel(registeredTask.getName(), true);
         }
 
-        RegisteredTask previousTask = scheduledTasks.putIfAbsent(task.getName(), registeredTask);
+        RegisteredTask previousTask = scheduledTasks.putIfAbsent(registeredTask.getName(), registeredTask);
         if (!registeredTask.equals(previousTask)) {
             throw new TaskAlreadyExistsException(registeredTask.getName());
         }
@@ -52,31 +56,16 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
         log.info("Registered task: {}", registeredTask.getName());
     }
 
-    private void reSchedule(RegisteredTask registeredTask) {
-        cancelSilently(registeredTask.getName());
-
-        scheduledTasks.put(registeredTask.getName(), registeredTask);
-        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.getTrigger());
-
-        registeredTask.setFuture(future);
-        log.info("Task {} was re-scheduled", registeredTask.getName());
-    }
-
     @Override
-    public void cancel(String taskName) throws TaskNotFoundException {
+    public void cancel(String taskName, boolean silently) {
         RegisteredTask removedTask = scheduledTasks.remove(taskName);
         if (removedTask == null) {
-            throw new TaskNotFoundException(taskName);
-        }
-
-        removedTask.getFuture().cancel(mayInterruptIfRunning);
-        log.info("Cancelled task: {}", taskName);
-    }
-
-    @Override
-    public void cancelSilently(String taskName) {
-        RegisteredTask removedTask = scheduledTasks.remove(taskName);
-        if (removedTask != null) {
+            if (!silently) {
+                throw new TaskNotFoundException(taskName);
+            } else {
+                log.debug("Cannot cancel task. Task was not found with name: {}", taskName);
+            }
+        } else {
             removedTask.getFuture().cancel(mayInterruptIfRunning);
             log.info("Cancelled task: {}", taskName);
         }
@@ -98,7 +87,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
             if (newTrigger.equals(lastTrigger)) {
                 log.debug("Trigger did not changed for taskName: {}", taskName);
             } else {
-                reSchedule(registeredTask);
+                schedule(registeredTask, true);
             }
         });
     }

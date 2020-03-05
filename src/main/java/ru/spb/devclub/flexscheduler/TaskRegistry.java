@@ -1,17 +1,12 @@
 package ru.spb.devclub.flexscheduler;
 
-import ru.spb.devclub.flexscheduler.exception.TaskAlreadyExistsException;
-import ru.spb.devclub.flexscheduler.exception.TaskNotFoundException;
-
 import java.util.List;
 
 public interface TaskRegistry {
 
-    void schedule(Task task, boolean overwrite) throws TaskAlreadyExistsException;
+    void schedule(Task task, boolean overwrite);
 
-    void cancel(String taskName) throws TaskNotFoundException;
-
-    void cancelSilently(String taskName);
+    void cancel(String taskName, boolean silently);
 
     List<ObservableTask> getList();
 
