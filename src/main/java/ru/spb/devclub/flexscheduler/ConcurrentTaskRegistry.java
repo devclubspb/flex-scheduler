@@ -50,7 +50,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
             throw new TaskAlreadyExistsException(registeredTask.getName());
         }
 
-        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.getTrigger());
+        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.fetchTrigger());
 
         registeredTask.setFuture(future);
         log.info("Registered task: {}", registeredTask.getName());
@@ -82,7 +82,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
     public void refreshTriggers() {
         scheduledTasks.forEach((taskName, registeredTask) -> {
             Trigger lastTrigger = registeredTask.getLastTrigger();
-            Trigger newTrigger = registeredTask.getTrigger();
+            Trigger newTrigger = registeredTask.fetchTrigger();
 
             if (newTrigger.equals(lastTrigger)) {
                 log.debug("Trigger did not changed for taskName: {}", taskName);
