@@ -23,14 +23,14 @@ class RegisteredTask {
     private final ObservableRunnable command;
     @Getter
     @Setter
-    private ScheduledFuture<?> future;
+    private volatile ScheduledFuture<?> future;
 
     @Getter
     private volatile LocalDateTime lastLaunchDate;
     @Getter
     private volatile LocalDateTime lastFinishedDate;
     @Getter
-    private boolean isActive;
+    private volatile boolean isActive;
     private final AtomicInteger launchedCount = new AtomicInteger();
     private final AtomicReference<Trigger> lastTrigger = new AtomicReference<>();
 

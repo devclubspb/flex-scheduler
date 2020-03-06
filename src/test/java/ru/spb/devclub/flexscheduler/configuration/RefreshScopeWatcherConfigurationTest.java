@@ -12,7 +12,7 @@ class RefreshScopeWatcherConfigurationTest {
 
     @Test
     public void whenDependentClassIsNotPresent_thenBeanMissing() {
-        new ApplicationContextRunner().withUserConfiguration(RefreshScopeWatcherConfiguration.class)
+        new ApplicationContextRunner().withUserConfiguration(RefreshScopeWatcherAutoConfiguration.class)
                 .withClassLoader(new FilteredClassLoader(RefreshScopeRefreshedEvent.class))
                 .run(context -> assertThat(context).doesNotHaveBean(RefreshScopeWatcher.class));
     }

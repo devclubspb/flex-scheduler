@@ -10,7 +10,7 @@ public class ObservableTask {
     private final String name;
     private final Trigger trigger;
 
-    private final LocalDateTime lastLaunchDate;
+    private final LocalDateTime lastLaunchedDate;
     private final LocalDateTime lastFinishedDate;
     private final boolean active;
     private final int launchedCount;
@@ -18,7 +18,7 @@ public class ObservableTask {
     public ObservableTask(RegisteredTask registeredTask) {
         this.name = registeredTask.getName();
         this.trigger = registeredTask.getLastTrigger();
-        this.lastLaunchDate = registeredTask.getLastLaunchDate();
+        this.lastLaunchedDate = registeredTask.getLastLaunchDate();
         this.lastFinishedDate = registeredTask.getLastFinishedDate();
         this.active = registeredTask.isActive();
         this.launchedCount = registeredTask.getLaunchedCount();

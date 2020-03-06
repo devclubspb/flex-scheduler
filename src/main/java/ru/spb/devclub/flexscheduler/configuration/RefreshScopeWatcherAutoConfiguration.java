@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Configuration
 @ConditionalOnClass(RefreshScopeRefreshedEvent.class)
-public class RefreshScopeWatcherConfiguration {
+public class RefreshScopeWatcherAutoConfiguration {
 
     @Bean
     @ConditionalOnMissingBean
