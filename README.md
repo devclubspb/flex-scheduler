@@ -7,5 +7,5 @@ Flex scheduler for Spring-boot applications with on-fly config changes.
 ## Architecture
 
 ```
-TaskSupplier -(create)-> Task -(schedule)-> TaskRegistry <-(refreshTriggers)- TaskWatcher
+TaskProducer -(create)-> Task -(schedule)-> TaskRegistry <-(refreshTriggers)- TaskWatcher
 ```
