@@ -7,12 +7,16 @@ import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.core.MethodIntrospector;
 import org.springframework.core.annotation.AnnotatedElementUtils;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.lang.Nullable;
 import org.springframework.util.Assert;
 import org.springframework.util.ReflectionUtils;
+import org.springframework.util.StringUtils;
 import ru.spb.devclub.flexscheduler.Task;
 import ru.spb.devclub.flexscheduler.TaskRegistry;
+import ru.spb.devclub.flexscheduler.repository.TaskRegistryRepository;
+import ru.spb.devclub.flexscheduler.supplier.DataSourceTriggerSupplier;
+import ru.spb.devclub.flexscheduler.supplier.PropertyTriggerSupplier;
 import ru.spb.devclub.flexscheduler.supplier.TriggerSupplier;
-import ru.spb.devclub.flexscheduler.trigger.DisposableTrigger;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -20,7 +24,6 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author Grig Alex
@@ -35,9 +38,11 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
 
     private final Map<String, TaskRegistry> taskRegistries;
     private final Set<Class<?>> nonAnnotatedClasses;
+    private final TaskRegistryRepository taskRegistryRepository;
 
-    public FlexScheduledAnnotationBeanPostProcessor(Map<String, TaskRegistry> taskRegistries) {
+    public FlexScheduledAnnotationBeanPostProcessor(Map<String, TaskRegistry> taskRegistries, @Nullable TaskRegistryRepository taskRegistryRepository) {
         this.taskRegistries = taskRegistries;
+        this.taskRegistryRepository = taskRegistryRepository;
         this.nonAnnotatedClasses = Collections.newSetFromMap(new ConcurrentHashMap<>(64));
     }
 
@@ -75,8 +80,10 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
     }
 
     private Task createTask(FlexScheduled annotation, Method method, Object bean) {
-        final String taskName = createTaskName(annotation, method, bean);
-        final TriggerSupplier triggerSupplier = createTriggerSupplier(annotation, method, bean);
+        final String taskName = StringUtils.hasText(annotation.task())
+                ? annotation.task()
+                : createTaskName(annotation, method, bean);
+        final TriggerSupplier triggerSupplier = createTriggerSupplier(annotation, method, bean, taskName);
         final Runnable runnable = createRunnable(annotation, method, bean);
         return new Task(taskName, runnable, triggerSupplier);
     }
@@ -85,8 +92,13 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
         return method.getClass().getName() + "#" + method.getName();
     }
 
-    private TriggerSupplier createTriggerSupplier(FlexScheduled annotation, Method method, Object bean) {
-        return () -> new DisposableTrigger(annotation.fixedDelay(), TimeUnit.MILLISECONDS);
+    private TriggerSupplier createTriggerSupplier(FlexScheduled annotation, Method method, Object bean, String taskName) {
+        if (annotation.binding() == Binding.PROPERTY) {
+            return new PropertyTriggerSupplier(annotation.registry(), taskName);
+        } else {
+            Assert.notNull(taskRegistryRepository, taskName + " method uses @FlexScheduled with DataSource binding, but there is no TaskRegistryRepository");
+            return new DataSourceTriggerSupplier(taskRegistryRepository, annotation.registry(), taskName);
+        }
     }
 
     private Runnable createRunnable(FlexScheduled annotation, Method method, Object bean) {

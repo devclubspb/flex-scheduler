@@ -12,7 +12,13 @@ import java.lang.annotation.Target;
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FlexScheduled {
-    long fixedDelay() default -1;
 
     String registry() default "concurrentTaskRegistry";
+
+    /**
+     * Default: Class#method
+     */
+    String task() default "";
+
+    Binding binding() default Binding.PROPERTY;
 }
