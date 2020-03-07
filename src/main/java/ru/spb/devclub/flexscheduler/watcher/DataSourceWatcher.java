@@ -15,7 +15,7 @@ public class DataSourceWatcher {
 
     private long lastChecksum = 0;
 
-    @FlexScheduled(task = "dataSourceWatcher", binding = Binding.PROPERTY) //todo user choice
+    @FlexScheduled(task = "dataSourceWatcher", binding = Binding.DATASOURCE)
     public synchronized void check() {
         long currentChecksum = taskRegistryRepository.checksum();
 
