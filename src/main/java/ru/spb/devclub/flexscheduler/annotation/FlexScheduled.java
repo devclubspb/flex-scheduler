@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface FlexScheduled {
     long fixedDelay() default -1;
+
+    String registry() default "concurrentTaskRegistry";
 }
