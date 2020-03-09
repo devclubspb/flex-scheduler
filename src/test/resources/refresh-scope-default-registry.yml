@@ -1,0 +1,12 @@
+flex-scheduler:
+  binding: property
+  tasks:
+    events:
+      update: "0 0 * * * *"
+      queue.cron: "1 1 * * * *"
+    festivals:
+      new:
+        update:
+          fixed-delay: 1000
+          initial-delay: 2000
+        queue.fixedRate: 3000
