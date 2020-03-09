@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import ru.spb.devclub.flexscheduler.annotation.Binding;
-import ru.spb.devclub.flexscheduler.configuration.property.FlexSchedulerProperties;
+import ru.spb.devclub.flexscheduler.configuration.property.Binding;
+import ru.spb.devclub.flexscheduler.configuration.property.RefreshableFlexSchedulerProperties;
 import ru.spb.devclub.flexscheduler.configuration.property.RegistryProperty;
 import ru.spb.devclub.flexscheduler.configuration.property.TaskProperty;
 
@@ -20,12 +20,12 @@ import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_POOL_S
 import static ru.spb.devclub.flexscheduler.annotation.FlexScheduledAnnotationBeanPostProcessor.DEFAULT_REGISTRY_NAME;
 
 @ExtendWith(SpringExtension.class)
-@EnableConfigurationProperties(value = FlexSchedulerProperties.class)
+@EnableConfigurationProperties(value = RefreshableFlexSchedulerProperties.class)
 @PropertySource(value = "classpath:refresh-scope-default-registry.yml", factory = YamlPropertyLoaderFactory.class)
-class FlexSchedulerPropertiesDefaultRegistryTest {
+class RefreshableFlexSchedulerPropertiesDefaultRegistryTest {
 
     @Autowired
-    FlexSchedulerProperties properties;
+    RefreshableFlexSchedulerProperties properties;
 
 
     @Test

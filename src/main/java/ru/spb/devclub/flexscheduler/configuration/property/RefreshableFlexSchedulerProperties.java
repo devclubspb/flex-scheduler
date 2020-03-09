@@ -3,10 +3,12 @@ package ru.spb.devclub.flexscheduler.configuration.property;
 import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
-import ru.spb.devclub.flexscheduler.annotation.Binding;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,9 +21,12 @@ import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_MAY_IN
 import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_POOL_SIZE;
 import static ru.spb.devclub.flexscheduler.annotation.FlexScheduledAnnotationBeanPostProcessor.DEFAULT_REGISTRY_NAME;
 
+
+@RefreshScope
 @Configuration
+@ConditionalOnClass({RefreshScopeRefreshedEvent.class, org.springframework.cloud.context.scope.refresh.RefreshScope.class})
 @ConfigurationProperties(prefix = "flex-scheduler")
-public class FlexSchedulerProperties {
+public class RefreshableFlexSchedulerProperties {
     @Getter
     @Setter
     private Binding binding;
@@ -141,3 +146,5 @@ public class FlexSchedulerProperties {
     }
 
 }
+
+

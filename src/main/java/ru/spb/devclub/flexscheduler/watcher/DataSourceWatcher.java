@@ -2,7 +2,6 @@ package ru.spb.devclub.flexscheduler.watcher;
 
 import lombok.RequiredArgsConstructor;
 import ru.spb.devclub.flexscheduler.TaskRegistry;
-import ru.spb.devclub.flexscheduler.annotation.Binding;
 import ru.spb.devclub.flexscheduler.annotation.FlexScheduled;
 import ru.spb.devclub.flexscheduler.repository.TaskRegistryRepository;
 
@@ -15,7 +14,7 @@ public class DataSourceWatcher {
 
     private long lastChecksum = 0;
 
-    @FlexScheduled(task = "dataSourceWatcher", binding = Binding.DATASOURCE)
+    @FlexScheduled(task = "data-source-watcher")
     public synchronized void check() {
         long currentChecksum = taskRegistryRepository.checksum();
 

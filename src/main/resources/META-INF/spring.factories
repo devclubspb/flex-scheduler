@@ -1,4 +1,5 @@
 org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
   ru.spb.devclub.flexscheduler.configuration.FlexSchedulerAutoConfiguration, \
   ru.spb.devclub.flexscheduler.configuration.FlexSchedulerRefreshScopeAutoConfiguration, \
-  ru.spb.devclub.flexscheduler.configuration.ActuatorFlexSchedulerAutoConfiguration
+  ru.spb.devclub.flexscheduler.configuration.ActuatorFlexSchedulerAutoConfiguration, \
+  ru.spb.devclub.flexscheduler.configuration.property.RefreshableFlexSchedulerProperties

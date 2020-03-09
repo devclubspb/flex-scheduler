@@ -13,6 +13,7 @@ import org.springframework.util.ReflectionUtils;
 import org.springframework.util.StringUtils;
 import ru.spb.devclub.flexscheduler.Task;
 import ru.spb.devclub.flexscheduler.TaskRegistry;
+import ru.spb.devclub.flexscheduler.configuration.property.Binding;
 import ru.spb.devclub.flexscheduler.repository.TaskRegistryRepository;
 import ru.spb.devclub.flexscheduler.supplier.DataSourceTriggerSupplier;
 import ru.spb.devclub.flexscheduler.supplier.PropertyTriggerSupplier;

@@ -1,6 +1,7 @@
 package ru.spb.devclub.flexscheduler.annotation;
 
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import ru.spb.devclub.flexscheduler.configuration.property.Binding;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
