@@ -30,6 +30,8 @@ import java.util.concurrent.ConcurrentHashMap;
  * @see org.springframework.scheduling.annotation.ScheduledAnnotationBeanPostProcessor
  */
 public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcessor {
+    public static final String DEFAULT_REGISTRY_NAME = "concurrentTaskRegistry";
+
     private static final MethodIntrospector.MetadataLookup<Set<FlexScheduled>> SELECTOR = method -> {
         Set<FlexScheduled> methods =
                 AnnotatedElementUtils.getMergedRepeatableAnnotations(method, FlexScheduled.class);

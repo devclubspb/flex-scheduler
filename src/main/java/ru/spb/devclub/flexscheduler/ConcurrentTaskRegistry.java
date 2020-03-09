@@ -15,7 +15,8 @@ import java.util.stream.Collectors;
 
 @Slf4j
 public class ConcurrentTaskRegistry implements TaskRegistry {
-    private static final boolean DEFAULT_MAY_INTERRUPT_IF_RUNNING = false;
+    public static final boolean DEFAULT_MAY_INTERRUPT_IF_RUNNING = false;
+    public static final int DEFAULT_POOL_SIZE = 1;
 
     private final Map<String, RegisteredTask> scheduledTasks = new ConcurrentHashMap<>();
     private final ThreadPoolTaskScheduler executorService = new ThreadPoolTaskScheduler() {{

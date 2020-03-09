@@ -1,3 +1,4 @@
+-- TODO two tables, registry settings
 CREATE TABLE scheduler
 (
     registry_name VARCHAR(140) NOT NULL,

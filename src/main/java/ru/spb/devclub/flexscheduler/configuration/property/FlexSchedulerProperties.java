@@ -1,17 +1,23 @@
 package ru.spb.devclub.flexscheduler.configuration.property;
 
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.util.StringUtils;
 import ru.spb.devclub.flexscheduler.annotation.Binding;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
+import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_MAY_INTERRUPT_IF_RUNNING;
+import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_POOL_SIZE;
+import static ru.spb.devclub.flexscheduler.annotation.FlexScheduledAnnotationBeanPostProcessor.DEFAULT_REGISTRY_NAME;
 
 @Configuration
 @ConfigurationProperties(prefix = "flex-scheduler")
@@ -20,15 +26,54 @@ public class FlexSchedulerProperties {
     @Setter
     private Binding binding;
     @Setter
+    private Boolean mayInterruptIfRunning;
+    @Setter
+    private Integer poolSize;
+    @Setter
     private Map<String, Object> tasks;
+    @Setter
+    private Map<String, Registry> registries;
 
-    public List<TaskProperty> buildTaskProperties() {
-        List<TaskProperty> result = new ArrayList<>();
-        for (Map.Entry<String, Object> entry : tasks.entrySet()) {
-            List<TaskProperty> tasks = readTasks(entry.getKey(), entry.getValue());
-            result.addAll(tasks);
+    @Data
+    public static class Registry {
+        private Binding binding;
+        private Boolean mayInterruptIfRunning;
+        private Integer poolSize;
+        private Map<String, Object> tasks;
+    }
+
+    public List<RegistryProperty> buildRegistryProperties() {
+        if (registries != null) {
+            List<RegistryProperty> result = new ArrayList<>();
+            for (Entry<String, Registry> entry : registries.entrySet()) {
+                RegistryProperty registry = readRegistry(entry.getKey(), entry.getValue());
+                result.add(registry);
+            }
+            return unmodifiableList(result);
+        } else {
+            Registry registry = new Registry();
+            registry.setTasks(tasks);
+            return singletonList(readRegistry(DEFAULT_REGISTRY_NAME, registry));
         }
-        return unmodifiableList(result);
+    }
+
+    private RegistryProperty readRegistry(String name, Registry registry) {
+        int poolSize = DEFAULT_POOL_SIZE;
+        if (registry.getPoolSize() != null) {
+            poolSize = registry.getPoolSize();
+        } else if (this.poolSize != null) {
+            poolSize = this.poolSize;
+        }
+
+        boolean mayInterruptIfRunning = DEFAULT_MAY_INTERRUPT_IF_RUNNING;
+        if (registry.getMayInterruptIfRunning() != null) {
+            mayInterruptIfRunning = registry.getMayInterruptIfRunning();
+        } else if (this.mayInterruptIfRunning != null) {
+            mayInterruptIfRunning = this.mayInterruptIfRunning;
+        }
+
+        List<TaskProperty> tasks = readTasks(null, registry.getTasks());
+        return new RegistryProperty(name, mayInterruptIfRunning, poolSize, tasks);
     }
 
     @SuppressWarnings("unchecked")
@@ -49,8 +94,11 @@ public class FlexSchedulerProperties {
                 ));
             } else {
 
-                for (Map.Entry<String, Object> entry : valueMap.entrySet()) {
-                    tasks.addAll(readTasks(currentName + "." + entry.getKey(), entry.getValue()));
+                for (Entry<String, Object> entry : valueMap.entrySet()) {
+                    String name = StringUtils.hasText(currentName)
+                            ? currentName + "." + entry.getKey()
+                            : entry.getKey();
+                    tasks.addAll(readTasks(name, entry.getValue()));
                 }
                 return tasks;
             }

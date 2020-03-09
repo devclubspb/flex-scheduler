@@ -1,0 +1,29 @@
+flex-scheduler:
+  binding: property
+  mayInterruptIfRunning: true
+  poolSize: 4
+  registries:
+    first:
+      mayInterruptIfRunning: false
+      poolSize: 2
+      tasks:
+        events:
+          update: "0 0 * * * *"
+          queue.cron: "1 1 * * * *"
+        festivals:
+          new:
+            update:
+              fixed-delay: 1000
+              initial-delay: 2000
+            queue.fixedRate: 3000
+    second:
+      tasks:
+        events:
+          update: "2 2 * * * *"
+          queue.cron: "3 3 * * * *"
+        festivals:
+          new:
+            update:
+              fixed-delay: 4000
+              initial-delay: 5000
+            queue.fixedRate: 6000
