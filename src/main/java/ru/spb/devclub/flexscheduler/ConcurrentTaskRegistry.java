@@ -22,16 +22,6 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
     private final ThreadPoolTaskScheduler executorService = new ThreadPoolTaskScheduler() {{
         setRemoveOnCancelPolicy(true);
     }};
-    private final boolean mayInterruptIfRunning;
-
-    public ConcurrentTaskRegistry() {
-        this.mayInterruptIfRunning = DEFAULT_MAY_INTERRUPT_IF_RUNNING;
-    }
-
-    public ConcurrentTaskRegistry(int poolSize, boolean mayInterruptIfRunning) {
-        executorService.setPoolSize(poolSize);
-        this.mayInterruptIfRunning = mayInterruptIfRunning;
-    }
 
     @Override
     public void schedule(Task task, boolean overwrite) {
@@ -67,7 +57,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
                 log.debug("Cannot cancel task. Task was not found with name: {}", taskName);
             }
         } else {
-            removedTask.getFuture().cancel(mayInterruptIfRunning);
+            removedTask.getFuture().cancel(removedTask.isMayInterruptIfRunning());
             log.info("Cancelled task: {}", taskName);
         }
     }
@@ -83,6 +73,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
     public void refreshTriggers() {
         scheduledTasks.forEach((taskName, registeredTask) -> {
             Trigger lastTrigger = registeredTask.getLastTrigger();
+            //todo fix double fetch: here and in schedule()
             Trigger newTrigger = registeredTask.fetchTrigger();
 
             if (newTrigger.equals(lastTrigger)) {
@@ -91,5 +82,10 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
                 schedule(registeredTask, true);
             }
         });
+    }
+
+    @Override
+    public void setPoolSize(int value) {
+        this.executorService.setPoolSize(value);
     }
 }

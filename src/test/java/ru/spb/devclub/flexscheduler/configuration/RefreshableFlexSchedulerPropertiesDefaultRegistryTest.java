@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_MAY_INTERRUPT_IF_RUNNING;
 import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_POOL_SIZE;
 import static ru.spb.devclub.flexscheduler.annotation.FlexScheduledAnnotationBeanPostProcessor.DEFAULT_REGISTRY_NAME;
 
@@ -32,7 +31,7 @@ class RefreshableFlexSchedulerPropertiesDefaultRegistryTest {
     void propertiesParsing() {
         List<RegistryProperty> registries = properties.buildRegistryProperties();
         assertThat(registries).containsExactly(
-                new RegistryProperty(DEFAULT_REGISTRY_NAME, DEFAULT_MAY_INTERRUPT_IF_RUNNING, DEFAULT_POOL_SIZE,
+                new RegistryProperty(DEFAULT_REGISTRY_NAME, DEFAULT_POOL_SIZE,
                         Arrays.asList(
                                 new TaskProperty("events.update", "0 0 * * * *", null, null, null),
                                 new TaskProperty("events.queue", "1 1 * * * *", null, null, null),

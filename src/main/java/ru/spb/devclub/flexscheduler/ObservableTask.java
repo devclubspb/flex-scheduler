@@ -9,6 +9,7 @@ import java.time.LocalDateTime;
 public class ObservableTask {
     private final String name;
     private final Trigger trigger;
+    private final boolean mayInterruptIfRunning;
 
     private final LocalDateTime lastLaunchedDate;
     private final LocalDateTime lastFinishedDate;
@@ -22,5 +23,6 @@ public class ObservableTask {
         this.lastFinishedDate = registeredTask.getLastFinishedDate();
         this.active = registeredTask.isActive();
         this.launchedCount = registeredTask.getLaunchedCount();
+        this.mayInterruptIfRunning = registeredTask.isMayInterruptIfRunning();
     }
 }

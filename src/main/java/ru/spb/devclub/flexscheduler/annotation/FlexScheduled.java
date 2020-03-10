@@ -27,4 +27,6 @@ public @interface FlexScheduled {
     String task() default "";
 
     Binding binding() default Binding.PROPERTY;
+
+    boolean mayInterruptIfRunning() default false;
 }

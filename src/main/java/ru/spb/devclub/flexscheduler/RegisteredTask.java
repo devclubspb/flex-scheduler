@@ -22,6 +22,8 @@ class RegisteredTask {
     @Getter
     private final ObservableRunnable command;
     @Getter
+    private final boolean mayInterruptIfRunning;
+    @Getter
     @Setter
     private volatile ScheduledFuture<?> future;
 
@@ -43,6 +45,7 @@ class RegisteredTask {
         this.name = task.getName();
         this.triggerSupplier = task.getTriggerSupplier();
         this.command = new ObservableRunnable(task.getCommand());
+        this.mayInterruptIfRunning = task.isMayInterruptIfRunning();
     }
 
     public Trigger fetchTrigger() {

@@ -17,7 +17,6 @@ import java.util.Map.Entry;
 
 import static java.util.Collections.singletonList;
 import static java.util.Collections.unmodifiableList;
-import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_MAY_INTERRUPT_IF_RUNNING;
 import static ru.spb.devclub.flexscheduler.ConcurrentTaskRegistry.DEFAULT_POOL_SIZE;
 import static ru.spb.devclub.flexscheduler.annotation.FlexScheduledAnnotationBeanPostProcessor.DEFAULT_REGISTRY_NAME;
 
@@ -31,8 +30,6 @@ public class RefreshableFlexSchedulerProperties {
     @Setter
     private Binding binding;
     @Setter
-    private Boolean mayInterruptIfRunning;
-    @Setter
     private Integer poolSize;
     @Setter
     private Map<String, Object> tasks;
@@ -42,7 +39,6 @@ public class RefreshableFlexSchedulerProperties {
     @Data
     public static class Registry {
         private Binding binding;
-        private Boolean mayInterruptIfRunning;
         private Integer poolSize;
         private Map<String, Object> tasks;
     }
@@ -70,15 +66,8 @@ public class RefreshableFlexSchedulerProperties {
             poolSize = this.poolSize;
         }
 
-        boolean mayInterruptIfRunning = DEFAULT_MAY_INTERRUPT_IF_RUNNING;
-        if (registry.getMayInterruptIfRunning() != null) {
-            mayInterruptIfRunning = registry.getMayInterruptIfRunning();
-        } else if (this.mayInterruptIfRunning != null) {
-            mayInterruptIfRunning = this.mayInterruptIfRunning;
-        }
-
         List<TaskProperty> tasks = readTasks(null, registry.getTasks());
-        return new RegistryProperty(name, mayInterruptIfRunning, poolSize, tasks);
+        return new RegistryProperty(name, poolSize, tasks);
     }
 
     @SuppressWarnings("unchecked")
