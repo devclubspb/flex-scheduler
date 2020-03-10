@@ -41,7 +41,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
             throw new TaskAlreadyExistsException(registeredTask.getName());
         }
 
-        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.fetchTrigger());
+        ScheduledFuture<?> future = executorService.scheduleWithFixedDelay()le(registeredTask.getCommand(), registeredTask.fetchTrigger());
 
         registeredTask.setFuture(future);
         log.info("Registered task: {}", registeredTask.getName());

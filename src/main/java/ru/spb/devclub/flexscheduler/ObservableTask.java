@@ -1,14 +1,13 @@
 package ru.spb.devclub.flexscheduler;
 
 import lombok.Data;
-import org.springframework.scheduling.Trigger;
 
 import java.time.LocalDateTime;
 
 @Data
 public class ObservableTask {
     private final String name;
-    private final Trigger trigger;
+    private final String trigger;
     private final boolean mayInterruptIfRunning;
 
     private final LocalDateTime lastLaunchedDate;
@@ -18,7 +17,7 @@ public class ObservableTask {
 
     public ObservableTask(RegisteredTask registeredTask) {
         this.name = registeredTask.getName();
-        this.trigger = registeredTask.getLastTrigger();
+        this.trigger = registeredTask.getLastTrigger().toString();
         this.lastLaunchedDate = registeredTask.getLastLaunchDate();
         this.lastFinishedDate = registeredTask.getLastFinishedDate();
         this.active = registeredTask.isActive();

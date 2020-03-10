@@ -1,5 +1,10 @@
--- TODO two tables, registry settings
-CREATE TABLE scheduler
+CREATE TABLE flex_scheduler_registry
+(
+    registry_name VARCHAR(140) NOT NULL PRIMARY KEY,
+    pool_size     INTEGER
+);
+
+CREATE TABLE flex_scheduler_task
 (
     registry_name VARCHAR(140) NOT NULL,
     task_name     VARCHAR(140) NOT NULL,
@@ -18,5 +23,6 @@ CREATE TABLE scheduler
                                                'MINUTES',
                                                'HOURS',
                                                'DAYS') ),
-    PRIMARY KEY (registry_name, task_name)
+    PRIMARY KEY (registry_name, task_name),
+    FOREIGN KEY (registry_name) REFERENCES flex_scheduler_registry (registry_name) ON DELETE CASCADE
 );
