@@ -83,19 +83,22 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
     }
 
     private Task createTask(FlexScheduled annotation, Method method, Object bean) {
-        final String taskName = StringUtils.hasText(annotation.task())
-                ? annotation.task()
-                : createTaskName(annotation, method, bean);
-        final TriggerSupplier triggerSupplier = createTriggerSupplier(annotation, method, bean, taskName);
-        final Runnable runnable = createRunnable(annotation, method, bean);
+        final String taskName = createTaskName(annotation, method);
+        final Runnable runnable = createRunnable(method, bean);
+        final TriggerSupplier triggerSupplier = createTriggerSupplier(annotation, taskName);
         return new Task(taskName, runnable, triggerSupplier);
     }
 
-    private String createTaskName(FlexScheduled annotation, Method method, Object bean) {
+    private String createTaskName(FlexScheduled annotation, Method method) {
+        final String taskName = annotation.task();
+        return StringUtils.hasText(taskName) ? taskName : createDefaultTaskName(method);
+    }
+
+    private String createDefaultTaskName(Method method) {
         return method.getClass().getName() + "#" + method.getName();
     }
 
-    private TriggerSupplier createTriggerSupplier(FlexScheduled annotation, Method method, Object bean, String taskName) {
+    private TriggerSupplier createTriggerSupplier(FlexScheduled annotation, String taskName) {
         if (annotation.binding() == Binding.PROPERTY) {
             return new PropertyTriggerSupplier(annotation.registry(), taskName);
         } else {
@@ -104,7 +107,7 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
         }
     }
 
-    private Runnable createRunnable(FlexScheduled annotation, Method method, Object bean) {
+    private Runnable createRunnable(Method method, Object bean) {
         Assert.isTrue(method.getParameterCount() == 0, "Only no-arg methods may be annotated with @FlexScheduled");
         Method invocableMethod = AopUtils.selectInvocableMethod(method, bean.getClass());
         return () -> {
