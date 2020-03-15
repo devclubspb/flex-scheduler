@@ -4,9 +4,8 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.springframework.scheduling.Trigger;
 import org.springframework.util.Assert;
-import ru.spb.devclub.flexscheduler.supplier.TriggerSupplier;
+import ru.spb.devclub.flexscheduler.supplier.TaskSettingsSupplier;
 
 import java.time.LocalDateTime;
 import java.util.concurrent.ScheduledFuture;
@@ -18,7 +17,7 @@ import java.util.concurrent.atomic.AtomicReference;
 class RegisteredTask {
     @Getter
     private final String name;
-    private final TriggerSupplier triggerSupplier;
+    private final TaskSettingsSupplier taskSettingsSupplier;
     @Getter
     private final ObservableRunnable command;
     @Getter
@@ -34,30 +33,30 @@ class RegisteredTask {
     @Getter
     private volatile boolean isActive;
     private final AtomicInteger launchedCount = new AtomicInteger();
-    private final AtomicReference<Trigger> lastTrigger = new AtomicReference<>();
+    private final AtomicReference<TaskSettings> lastSettings = new AtomicReference<>();
 
     public RegisteredTask(Task task) {
         Assert.notNull(task, "task must not be null");
         Assert.notNull(task.getName(), "task name must not be null");
         Assert.notNull(task.getCommand(), "task command must not be null");
-        Assert.notNull(task.getTriggerSupplier(), "task trigger must not be null");
+        Assert.notNull(task.getTaskSettingsSupplier(), "task trigger must not be null");
 
         this.name = task.getName();
-        this.triggerSupplier = task.getTriggerSupplier();
+        this.taskSettingsSupplier = task.getTaskSettingsSupplier();
         this.command = new ObservableRunnable(task.getCommand());
         this.mayInterruptIfRunning = task.isMayInterruptIfRunning();
     }
 
-    public Trigger fetchTrigger() {
-        Trigger trigger = triggerSupplier.get();
-        Assert.notNull(trigger, "triggerSupplier returned null trigger for taskName: " + name);
+    public TaskSettings fetchSettings() {
+        TaskSettings taskSettings = taskSettingsSupplier.get();
+        Assert.notNull(taskSettings, "taskSettings returned null settings for taskName: " + name);
 
-        lastTrigger.set(trigger);
-        return trigger;
+        lastSettings.set(taskSettings);
+        return taskSettings;
     }
 
-    public Trigger getLastTrigger() {
-        return lastTrigger.get();
+    public TaskSettings getLastSettings() {
+        return lastSettings.get();
     }
 
     public int getLaunchedCount() {

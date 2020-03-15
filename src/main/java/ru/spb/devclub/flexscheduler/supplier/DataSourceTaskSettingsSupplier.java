@@ -1,17 +1,17 @@
 package ru.spb.devclub.flexscheduler.supplier;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.Trigger;
+import ru.spb.devclub.flexscheduler.TaskSettings;
 import ru.spb.devclub.flexscheduler.repository.TaskRegistryRepository;
 
 @RequiredArgsConstructor
-public class DataSourceTriggerSupplier implements TriggerSupplier {
+public class DataSourceTaskSettingsSupplier implements TaskSettingsSupplier {
     private final TaskRegistryRepository taskRegistryRepository;
     private final String registryName;
     private final String taskName;
 
     @Override
-    public Trigger get() {
+    public TaskSettings get() {
         return taskRegistryRepository.getTrigger(registryName, taskName);
     }
 

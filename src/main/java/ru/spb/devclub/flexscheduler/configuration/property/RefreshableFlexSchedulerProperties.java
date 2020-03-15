@@ -9,6 +9,7 @@ import org.springframework.cloud.context.config.annotation.RefreshScope;
 import org.springframework.cloud.context.scope.refresh.RefreshScopeRefreshedEvent;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.util.StringUtils;
+import ru.spb.devclub.flexscheduler.TaskSettings;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -73,7 +74,7 @@ public class RefreshableFlexSchedulerProperties {
     @SuppressWarnings("unchecked")
     private List<TaskProperty> readTasks(String currentName, Object value) {
         if (value instanceof String) {
-            return singletonList(new TaskProperty(currentName, value.toString(), null, null, null));
+            return singletonList(new TaskProperty(currentName, new TaskSettings(value.toString(), null, null, null)));
         } else {
             Map<String, Object> valueMap = (Map<String, Object>) value;
             List<TaskProperty> tasks = new ArrayList<>();
@@ -81,10 +82,11 @@ public class RefreshableFlexSchedulerProperties {
             if (isTaskPropertyObject(valueMap)) {
                 return singletonList(new TaskProperty(
                         currentName,
-                        readCron(valueMap),
-                        readFixedDelay(valueMap),
-                        readFixedRate(valueMap),
-                        readInitialDelay(valueMap)
+                        new TaskSettings(
+                                readCron(valueMap),
+                                readFixedDelay(valueMap),
+                                readFixedRate(valueMap),
+                                readInitialDelay(valueMap))
                 ));
             } else {
 

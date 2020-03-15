@@ -6,7 +6,7 @@ import java.util.List;
 
 @Value
 public class RegistryProperty {
-    private String name;
-    private int poolSize;
-    private List<TaskProperty> tasks;
+    private final String name;
+    private final int poolSize;
+    private final List<TaskProperty> tasks;
 }

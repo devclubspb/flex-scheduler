@@ -1,20 +1,20 @@
 package ru.spb.devclub.flexscheduler.supplier;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.scheduling.Trigger;
-import org.springframework.scheduling.support.CronTrigger;
+import ru.spb.devclub.flexscheduler.TaskSettings;
+import ru.spb.devclub.flexscheduler.configuration.property.RefreshableFlexSchedulerProperties;
 
 @RequiredArgsConstructor
-public class PropertyTriggerSupplier implements TriggerSupplier {
+public class PropertyTaskSettingsSupplier implements TaskSettingsSupplier {
+    private final RefreshableFlexSchedulerProperties refreshableFlexSchedulerProperties;
     private final String registryName;
     private final String taskName;
 
     @Override
-    public Trigger get() {
+    public TaskSettings get() {
         String cron = System.getProperty("flex-scheduling." + registryName + "." + taskName + ".cron");
-        if (cron != null) {
-            return new CronTrigger(cron);
-        }
+
+
         //todo add spring property binder
         //todo fixedDelay, fixedRate, empty cron
         return null;

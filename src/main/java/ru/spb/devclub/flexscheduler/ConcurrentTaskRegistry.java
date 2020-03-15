@@ -3,6 +3,7 @@ package ru.spb.devclub.flexscheduler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.util.Assert;
 import ru.spb.devclub.flexscheduler.exception.TaskAlreadyExistsException;
 import ru.spb.devclub.flexscheduler.exception.TaskNotFoundException;
@@ -41,7 +42,7 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
             throw new TaskAlreadyExistsException(registeredTask.getName());
         }
 
-        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.fetchTrigger());
+        ScheduledFuture<?> future = executorService.schedule(registeredTask.getCommand(), registeredTask.fetchSettings());
 
         registeredTask.setFuture(future);
         log.info("Registered task: {}", registeredTask.getName());
@@ -72,9 +73,9 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
     @Override
     public void refreshTriggers() {
         scheduledTasks.forEach((taskName, registeredTask) -> {
-            Trigger lastTrigger = registeredTask.getLastTrigger();
+            Trigger lastTrigger = registeredTask.getLastSettings();
             //todo fix double fetch: here and in schedule()
-            Trigger newTrigger = registeredTask.fetchTrigger();
+            Trigger newTrigger = registeredTask.fetchSettings();
 
             if (newTrigger.equals(lastTrigger)) {
                 log.debug("Trigger did not changed for taskName: {}", taskName);
@@ -87,5 +88,13 @@ public class ConcurrentTaskRegistry implements TaskRegistry {
     @Override
     public void setPoolSize(int value) {
         this.executorService.setPoolSize(value);
+    }
+
+    private ScheduledFuture<?> schedule(Runnable task, TaskSettings taskSettings) {
+        if (taskSettings.getCron() != null) {
+            return executorService.schedule(task, new CronTrigger(taskSettings.getCron()));
+        } else if (taskSettings.getFixedDelay() != null) {
+            return executorService.scheduleWithFixedDelay(task, )
+        }
     }
 }

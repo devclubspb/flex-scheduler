@@ -15,9 +15,9 @@ import ru.spb.devclub.flexscheduler.Task;
 import ru.spb.devclub.flexscheduler.TaskRegistry;
 import ru.spb.devclub.flexscheduler.configuration.property.Binding;
 import ru.spb.devclub.flexscheduler.repository.TaskRegistryRepository;
-import ru.spb.devclub.flexscheduler.supplier.DataSourceTriggerSupplier;
-import ru.spb.devclub.flexscheduler.supplier.PropertyTriggerSupplier;
-import ru.spb.devclub.flexscheduler.supplier.TriggerSupplier;
+import ru.spb.devclub.flexscheduler.selfscheduler.DataSourceSelfScheduler;
+import ru.spb.devclub.flexscheduler.selfscheduler.PropertySelfScheduler;
+import ru.spb.devclub.flexscheduler.selfscheduler.SelfScheduler;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -85,7 +85,7 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
     private Task createTask(FlexScheduled annotation, Method method, Object bean) {
         final String taskName = createTaskName(annotation, method);
         final Runnable runnable = createRunnable(method, bean);
-        final TriggerSupplier triggerSupplier = createTriggerSupplier(annotation, taskName);
+        final SelfScheduler triggerSupplier = createTriggerSupplier(annotation, taskName);
         return new Task(taskName, runnable, triggerSupplier, annotation.mayInterruptIfRunning());
     }
 
@@ -98,12 +98,12 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
         return method.getClass().getName() + "#" + method.getName();
     }
 
-    private TriggerSupplier createTriggerSupplier(FlexScheduled annotation, String taskName) {
+    private SelfScheduler createTriggerSupplier(FlexScheduled annotation, String taskName) {
         if (annotation.binding() == Binding.PROPERTY) {
-            return new PropertyTriggerSupplier(annotation.registry(), taskName);
+            return new PropertySelfScheduler(annotation.registry(), taskName);
         } else {
             Assert.notNull(taskRegistryRepository, taskName + " method uses @FlexScheduled with DataSource binding, but there is no TaskRegistryRepository");
-            return new DataSourceTriggerSupplier(taskRegistryRepository, annotation.registry(), taskName);
+            return new DataSourceSelfScheduler(taskRegistryRepository, annotation.registry(), taskName);
         }
     }
 
