@@ -60,7 +60,9 @@ public class FlexScheduledAnnotationBeanPostProcessor implements BeanPostProcess
                 for (Map.Entry<Method, Set<FlexScheduled>> entry : methodAnnotations.entrySet()) {
                     final Method method = entry.getKey();
                     final Set<FlexScheduled> annotations = entry.getValue();
-                    annotations.forEach(annotation -> processFlexScheduled(annotation, method, bean));
+                    for (FlexScheduled annotation : annotations) {
+                        processFlexScheduled(annotation, method, bean);
+                    }
                 }
             }
         }

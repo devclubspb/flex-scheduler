@@ -1,12 +1,10 @@
 package ru.spb.devclub.flexscheduler.annotation;
 
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.scheduling.annotation.Schedules;
 import ru.spb.devclub.flexscheduler.configuration.property.Binding;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 import static ru.spb.devclub.flexscheduler.annotation.FlexScheduledAnnotationBeanPostProcessor.DEFAULT_REGISTRY_NAME;
 
@@ -14,8 +12,10 @@ import static ru.spb.devclub.flexscheduler.annotation.FlexScheduledAnnotationBea
  * @author Grig Alex
  * @see org.springframework.scheduling.annotation.Scheduled
  */
-@Target({ElementType.METHOD})
+@Target({ElementType.METHOD, ElementType.ANNOTATION_TYPE})
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Repeatable(FlexSchedules.class)
 @RefreshScope
 public @interface FlexScheduled {
 
