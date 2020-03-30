@@ -11,4 +11,6 @@ public interface TaskRegistry {
     List<ObservableTask> getList();
 
     void refreshTriggers();
+
+    void setPoolSize(int value);
 }
